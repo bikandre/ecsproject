@@ -113,7 +113,7 @@ jobs:
         run: |
          aws ecs create-service \
            --cluster ecsCluster1 \
-           --service-name my-new-ecs-service \
+           --service-name new-ecs-service1 \
            --task-definition my-ecs-task \
            --desired-count 1 \
            --launch-type EC2 \
