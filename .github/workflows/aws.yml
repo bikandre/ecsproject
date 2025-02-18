@@ -85,7 +85,7 @@ jobs:
           # Create Load Balancer
           LOAD_BALANCER_ARN=$(aws elbv2 create-load-balancer \
             --name my-load-balancer \
-            --subnets subnet-0c92d754a6ebdfbbb,subnet-044bc91bc93a84a76 \
+            --subnets ["subnet-0c92d754a6ebdfbbb","subnet-044bc91bc93a84a76"] \
             --security-groups sg-0038c39acc2cb1585 \
             --query 'LoadBalancers[0].LoadBalancerArn' \
             --output text)
