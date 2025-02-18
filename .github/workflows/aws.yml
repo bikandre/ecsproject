@@ -16,9 +16,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       
-      - name: Check user
-        run: whoami
-      
       - name: Set up the TAG environment variable
         run: echo "TAG=$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
 
@@ -49,9 +46,11 @@ jobs:
           docker tag andre/andreapp3:latest 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3$TAG
 
       # Push the Docker image to ECR
+      # Push the Docker image to ECR
       - name: Push Docker image to ECR
         run: |
-          docker tag andre/andreapp3:latest 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3$TAG
+          docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3$TAG
+
 
       # # Update ECS Task Definition
       # - name: Update ECS Task Definition
