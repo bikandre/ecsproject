@@ -15,7 +15,10 @@ jobs:
       # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v2
-
+      
+      - name: Check user
+        run: whoami
+      
       - name: Set up the TAG environment variable
         run: echo "TAG=$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
 
