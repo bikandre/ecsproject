@@ -60,7 +60,7 @@ jobs:
               "containerDefinitions": [
                 {
                   "name": "dockergs",
-                  "image": "'$AWS_ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3:'$TAG'",
+                  "image": "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}",
                   "cpu": 256,
                   "memory": 512,
                   "essential": true,
@@ -85,6 +85,7 @@ jobs:
             --task-definition my-ecs-task \
             --desired-count 1 \
             --launch-type EC2 \
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-05a6864843a85e1f0,subnet-002e85e7be08ab721],securityGroups=[sg-0038c39acc2cb1585]}"
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-05a6864843a85e1f0,subnet-002e85e7be08ab721],securityGroups=[sg-0038c39acc2cb1585]}"\
+            --load-balancer targetGroupArn=arn:aws:elasticloadbalancing:us-east-1:135581164469:targetgroup/ecs-target-group/a1d219c635708137,containerName=dockergs,containerPort=5000
 
 
