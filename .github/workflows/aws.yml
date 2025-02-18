@@ -17,8 +17,12 @@ jobs:
         uses: actions/checkout@v2
       
       - name: Set up the TAG environment variable
-        run: echo "TAG=$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
+        run: |
+          TAG=$(git rev-parse --short=4 HEAD)
+          echo "TAG=$TAG"  # Output TAG value for debugging
+          echo "TAG=$TAG" >> $GITHUB_ENV
 
+      # Output Tag Value
       - name: Output Tag Value
         run: echo "TAG=$TAG"  # Output the TAG value to ensure it's being set
 
