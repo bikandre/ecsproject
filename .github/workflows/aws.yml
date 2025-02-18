@@ -55,25 +55,32 @@ jobs:
           docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}
 
 
-      # # Update ECS Task Definition
-      # - name: Update ECS Task Definition
-      #   run: |
-      #     # Register a new task definition with the updated image
-      #     aws ecs register-task-definition \
-      #       --family my-ecs-task \
-      #       --container-definitions "[{
-      #         \"name\": \"dockergs\",
-      #         \"image\": \"docker tag andre/andreapp3:latest 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3$TAG\",
-      #         \"cpu\": 256,
-      #         \"memory\": 512,
-      #         \"essential\": true,
-      #         \"portMappings\": [{\"containerPort\": 8080, \"hostPort\": 8080, \"protocol\": \"tcp\"}]
-      #       }]"
-
-      # # Update ECS service to use the new task definition
-      # - name: Update ECS service
-      #   run: |
-      #     aws ecs update-service \
-      #       --cluster your-cluster-name \
-      #       --service your-service-name \
-      #       --task-definition my-ecs-task
+  update-ecs-task-definition:
+      runs-on: self-hosted
+      needs: build-and-deploy  # This stage depends on the successful completion of the build-and-deploy job
+      steps:
+        # Update ECS Task Definition with the new tag
+        - name: Update ECS Task Definition
+          run: |
+            aws ecs register-task-definition \
+              --family my-ecs-task \
+              --container-definitions "[{
+                \"name\": \"dockergs\",
+                \"image\": \"135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}\",
+                \"cpu\": 256,
+                \"memory\": 512,
+                \"essential\": true,
+                \"portMappings\": [{\"containerPort\": 5000, \"hostPort\": 5000, \"protocol\": \"tcp\"}]
+              }]"
+ 
+  update-ecs-service:
+      runs-on: self-hosted
+      needs: update-ecs-task-definition  # This stage depends on the successful completion of the update-ecs-task-definition job
+      steps:
+        # Update ECS service to use the new task definition
+        - name: Update ECS Service
+          run: |
+            aws ecs update-service \
+              --cluster your-cluster-name \
+              --service your-service-name \
+              --task-definition my-ecs-task
