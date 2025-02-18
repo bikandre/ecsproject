@@ -80,32 +80,33 @@ jobs:
            --protocol HTTP \
            --port 5000 \
            --vpc-id vpc-0a86cafe357f439f0 \
-           --target-type instance \
+           --target-type ip \
            --query 'TargetGroups[0].TargetGroupArn' \
            --output text)
          echo "TARGET_GROUP_ARN=$TARGET_GROUP_ARN" >> $GITHUB_ENV
+     
 
      # Create Load Balancer
       - name: Create Load Balancer
         id: load-balancer
         run: |
-         LOAD_BALANCER_ARN=$(aws elbv2 create-load-balancer \
+          LOAD_BALANCER_ARN=$(aws elbv2 create-load-balancer \
            --name my-load-balancer \
            --subnets subnet-0c92d754a6ebdfbbb subnet-044bc91bc93a84a76 \
            --security-groups sg-068fa6ec455c21d8a \
            --query 'LoadBalancers[0].LoadBalancerArn' \
            --output text)
-         echo "LOAD_BALANCER_ARN=$LOAD_BALANCER_ARN" >> $GITHUB_ENV
-
-     # Create Listener for the Load Balancer
+           echo "LOAD_BALANCER_ARN=$LOAD_BALANCER_ARN" >> $GITHUB_ENV
+   
       - name: Create Load Balancer Listener
         id: load-balancer-listener
         run: |
-         aws elbv2 create-listener \
-         --load-balancer-arn $LOAD_BALANCER_ARN \
-         --protocol HTTP \
-         --port 80 \
-         --default-actions Type=forward,TargetGroupArn=$TARGET_GROUP_ARN
+          aws elbv2 create-listener \
+            --load-balancer-arn $LOAD_BALANCER_ARN \
+            --protocol HTTP \
+            --port 80 \
+            --default-actions Type=forward,TargetGroupArn=$TARGET_GROUP_ARN
+   
 
      # Create ECS Service and link it to the Load Balancer
       - name: Create ECS Service
@@ -118,3 +119,4 @@ jobs:
            --launch-type EC2 \
            --network-configuration "awsvpcConfiguration={subnets=[subnet-0c92d754a6ebdfbbb,subnet-044bc91bc93a84a76],securityGroups=[sg-068fa6ec455c21d8a]}" \
            --load-balancers "targetGroupArn=$TARGET_GROUP_ARN,containerName=dockergs,containerPort=5000"
+   
