@@ -20,7 +20,7 @@ jobs:
         run: echo "TAG=$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
 
       - name: Output Tag Value
-        run: echo "$TAG" Output the TAG value to ensure it's being set
+        run: echo "$TAG"
 
       # Set up AWS credentials (Make sure you add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as secrets in your GitHub repo)
       - name: Set up AWS CLI
@@ -39,10 +39,6 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t andre/andreapp3 .
-
-      # Check if the TAG is set correctly
-      - name: Verify TAG
-        run: "echo Verifying TAG: $TAG"  # Add a verification step to ensure the TAG is set correctly
 
       # Tag the image for ECR
       - name: Tag docker image with $TAG
