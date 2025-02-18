@@ -43,13 +43,15 @@ jobs:
       # Tag the image for ECR
       - name: Tag Docker image
         run: |
-          docker tag andre/andreapp3:latest 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3$TAG
+          docker tag andre/andreapp3 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre$TAG
 
+      # Push the Docker image to ECR
       # Push the Docker image to ECR
       # Push the Docker image to ECR
       - name: Push Docker image to ECR
         run: |
-          docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3$TAG
+          docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre$TAG
+
 
 
       # # Update ECS Task Definition
