@@ -20,7 +20,7 @@ jobs:
         run: echo "TAG=$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
 
       - name: Output Tag Value
-        run: echo "$TAG"
+        run: echo "TAG=$TAG"
 
       # Set up AWS credentials (Make sure you add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as secrets in your GitHub repo)
       - name: Set up AWS CLI
@@ -40,17 +40,16 @@ jobs:
         run: |
           docker build -t andre/andreapp3 .
 
-      # Tag the image for ECR
-      - name: Tag docker images with $TAG
+      # Tag the image for ECR with the correct TAG variable
+      - name: Tag docker image with $TAG
         run: |
-          docker tag andre/andreapp3 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre${TAG}
+          docker tag andre/andreapp3 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:${TAG}
 
-      # Push the Docker image to ECR
-      # Push the Docker image to ECR
       # Push the Docker image to ECR
       - name: Push Docker image to ECR
         run: |
-          docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre${TAG}
+          docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:${TAG}
+
 
 
 
