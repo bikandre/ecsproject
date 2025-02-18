@@ -73,15 +73,15 @@ jobs:
 
       - name: Create ECS Service with Load Balancer
         run: |
-          # Create Target Group for the load balancer
           TARGET_GROUP_ARN=$(aws elbv2 create-target-group \
-            --name my-target-group \
-            --protocol HTTP \
-            --port 5000 \
-            --vpc-id vpc-0a86cafe357f439f0 \
-            --query 'TargetGroups[0].TargetGroupArn' \
-            --output text)
-
+              --name my-target-group \
+              --protocol HTTP \
+              --port 5000 \
+              --vpc-id vpc-0a86cafe357f439f0 \
+              --target-type ip \
+              --query 'TargetGroups[0].TargetGroupArn' \
+              --output text)
+              
           # Create Load Balancer
           LOAD_BALANCER_ARN=$(aws elbv2 create-load-balancer \
             --name my-load-balancer \
