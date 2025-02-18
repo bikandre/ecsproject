@@ -54,25 +54,24 @@ jobs:
       - name: Create ECS Task Definition JSON
         run: |
           echo '{
-          "family": "my-ecs-task",
-          "containerDefinitions": [
-            {
-              "name": "dockergs",
-              "image": "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}",
-              "cpu": 256,
-              "memory": 512,
-              "essential": true,
-              "portMappings": [
-                {
-                  "containerPort": 8080,
-                  "hostPort": 8080,
-                  "protocol": "tcp"
-                }
-              ]
-            }
-            ]}
-            }
-            }
+            "family": "my-ecs-task",
+            "containerDefinitions": [
+              {
+                "name": "dockergs",
+                "image": "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}",
+                "cpu": 256,
+                "memory": 512,
+                "essential": true,
+                "portMappings": [
+                  {
+                    "containerPort": 8080,
+                    "hostPort": 8080,
+                    "protocol": "tcp"
+                  }
+                ]
+              }
+            ]
+          }' > task-definition.json
 
       # Register the ECS Task Definition
       - name: Register ECS Task Definition
