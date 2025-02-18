@@ -16,6 +16,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       
+      # Install Git if not already installed
+      - name: Install Git
+        run: |
+          sudo yum install -y git
+
       # Set up the TAG environment variable
       - name: Set up the TAG environment variable
         id: tag
@@ -53,8 +58,6 @@ jobs:
         run: |
           echo "Pushing image to ECR"
           docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}
-
-
 
       # # Update ECS Task Definition
       # - name: Update ECS Task Definition
