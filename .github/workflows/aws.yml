@@ -42,7 +42,7 @@ jobs:
 
       # Check if the TAG is set correctly
       - name: Verify TAG
-        run: echo "Verifying TAG: $TAG"  # Add a verification step to ensure the TAG is set correctly
+        run: "echo Verifying TAG: $TAG"  # Add a verification step to ensure the TAG is set correctly
 
       # Tag the image for ECR
       - name: Tag docker image with $TAG
