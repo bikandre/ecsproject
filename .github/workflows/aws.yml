@@ -55,7 +55,7 @@ jobs:
             "containerDefinitions": [
               {
                 "name": "dockergs",
-                "image": "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}",
+                "image": "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage1b8a",
                 "cpu": 256,
                 "memory": 512,
                 "essential": true,
