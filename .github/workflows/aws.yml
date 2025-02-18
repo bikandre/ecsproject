@@ -85,6 +85,6 @@ jobs:
             --task-definition my-ecs-task \
             --desired-count 1 \
             --launch-type EC2 \
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-xxxxxxxx],securityGroups=[sg-xxxxxxxx],assignPublicIp=ENABLED}"
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-05a6864843a85e1f0,subnet-002e85e7be08ab721],securityGroups=[sg-0038c39acc2cb1585]}"
 
 
