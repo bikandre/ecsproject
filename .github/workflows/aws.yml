@@ -16,13 +16,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Set up the TAG environment variable
       - name: Set up the TAG environment variable
-        run: |
-          TAG=$(git rev-parse --short=4 HEAD)
-          # Sanitize the TAG to make sure it contains only valid characters
-          TAG=${TAG//[^a-zA-Z0-9.-]/-}
-          echo "TAG=$TAG" >> $GITHUB_ENV
+        run: echo "TAG=$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
 
       - name: Output Tag Value
         run: echo "$TAG"
@@ -55,7 +50,6 @@ jobs:
         run: |
           docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}
 
-      # Register ECS Task Definition
       - name: Register ECS Task Definition
         run: |
             AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -66,7 +60,7 @@ jobs:
               "containerDefinitions": [
                 {
                   "name": "dockergs",
-                  "image": "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}",
+                  "image": "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage$TAG",
                   "cpu": 256,
                   "memory": 512,
                   "essential": true,
@@ -81,7 +75,8 @@ jobs:
               ]
             }' > task-definition.json
             aws ecs register-task-definition --cli-input-json file://task-definition.json
-
+  
+  
       - name: Update ECS Service
         run: |
           aws ecs create-service \
