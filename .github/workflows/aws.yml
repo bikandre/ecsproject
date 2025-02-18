@@ -41,16 +41,16 @@ jobs:
           docker build -t andre/andreapp3 .
 
       # Tag the image for ECR
-      - name: Tag Docker image
+      - name: Tag docker images with $TAG
         run: |
-          docker tag andre/andreapp3 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre$TAG
+          docker tag andre/andreapp3 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre${TAG}
 
       # Push the Docker image to ECR
       # Push the Docker image to ECR
       # Push the Docker image to ECR
       - name: Push Docker image to ECR
         run: |
-          docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre$TAG
+          docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre${TAG}
 
 
 
