@@ -3,10 +3,10 @@ name: Deploy to AWS ECR and ECS
 on:
   push:
     branches:
-      - main  # Trigger on push to main branch
+      - main  
   pull_request:
     branches:
-      - main  # Trigger on pull request to main branch
+      - main  
 
 jobs:
   build-and-deploy:
@@ -22,7 +22,6 @@ jobs:
       - name: Output Tag Value
         run: echo "$TAG"
 
-      # Set up AWS credentials
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -30,62 +29,73 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # Log in to Amazon ECR
       - name: Log in to Amazon ECR
         run: |
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 135581164469.dkr.ecr.us-east-1.amazonaws.com
 
-      # Build the Docker image
       - name: Build Docker image
         run: |
           docker build -t andre/andreapp3 .
 
-      # Tag the Docker image
       - name: Tag docker image with $TAG
         run: |
           docker tag andre/andreapp3 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}
 
-      # Push the Docker image to ECR
       - name: Push Docker image to ECR
         run: |
           docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}
 
       - name: Register ECS Task Definition
         run: |
-            AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-            echo '{
-              "family": "my-ecs-task",
-              "networkMode": "awsvpc",
-              "executionRoleArn": "arn:aws:iam::135581164469:role/ecsTaskExecutionRole",
-              "containerDefinitions": [
-                {
-                  "name": "dockergs",
-                  "image": "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimaged0aa",
-                  "cpu": 256,
-                  "memory": 512,
-                  "essential": true,
-                  "portMappings": [
-                    {
-                      "containerPort": 5000,
-                      "hostPort": 5000,
-                      "protocol": "tcp"
-                    }
-                  ]
-                }
-              ]
-            }' > task-definition.json
-            aws ecs register-task-definition --cli-input-json file://task-definition.json
-  
-  
-      - name: Update ECS Service
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo '{
+            "family": "my-ecs-task",
+            "networkMode": "awsvpc",
+            "executionRoleArn": "arn:aws:iam::135581164469:role/ecsTaskExecutionRole",
+            "containerDefinitions": [
+              {
+                "name": "dockergs",
+                "image": "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}",
+                "cpu": 256,
+                "memory": 512,
+                "essential": true,
+                "portMappings": [
+                  {
+                    "containerPort": 5000,
+                    "hostPort": 5000,
+                    "protocol": "tcp"
+                  }
+                ]
+              }
+            ]
+          }' > task-definition.json
+          aws ecs register-task-definition --cli-input-json file://task-definition.json
+
+      - name: Create ECS Service with Load Balancer
         run: |
+          # Create Target Group for the load balancer
+          TARGET_GROUP_ARN=$(aws elbv2 create-target-group \
+            --name my-target-group \
+            --protocol HTTP \
+            --port 5000 \
+            --vpc-id vpc-0a86cafe357f439f0 \
+            --query 'TargetGroups[0].TargetGroupArn' \
+            --output text)
+
+          # Create Load Balancer
+          LOAD_BALANCER_ARN=$(aws elbv2 create-load-balancer \
+            --name my-load-balancer \
+            --subnets subnet-05a6864843a85e1f0 subnet-002e85e7be08ab721 \
+            --security-groups sg-0038c39acc2cb1585 \
+            --query 'LoadBalancers[0].LoadBalancerArn' \
+            --output text)
+
+          # Create ECS Service and link it to the Load Balancer
           aws ecs create-service \
             --cluster ecsCluster1 \
-            --service-name newservice \
+            --service-name my-ecs-service \
             --task-definition my-ecs-task \
             --desired-count 1 \
             --launch-type EC2 \
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-05a6864843a85e1f0,subnet-002e85e7be08ab721],securityGroups=[sg-0038c39acc2cb1585]}"\
-            
-
-
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-05a6864843a85e1f0,subnet-002e85e7be08ab721],securityGroups=[sg-0038c39acc2cb1585]}" \
+            --load-balancers "targetGroupArn=$TARGET_GROUP_ARN,containerName=dockergs,containerPort=5000"
