@@ -116,5 +116,5 @@ jobs:
            --task-definition my-ecs-task \
            --desired-count 1 \
            --launch-type EC2 \
-           --network-configuration "awsvpcConfiguration={subnets=[subnet-05a6864843a85e1f0,subnet-002e85e7be08ab721],securityGroups=[sg-0038c39acc2cb1585]}" \
+           --network-configuration "awsvpcConfiguration={subnets=[subnet-0c92d754a6ebdfbbb,subnet-044bc91bc93a84a76],securityGroups=[sg-068fa6ec455c21d8a]}" \
            --load-balancers "targetGroupArn=$TARGET_GROUP_ARN,containerName=dockergs,containerPort=5000"
