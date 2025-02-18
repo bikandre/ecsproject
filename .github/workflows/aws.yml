@@ -54,29 +54,27 @@ jobs:
         run: |
             AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
             echo '{
-              resource "aws_ecs_task_definition" "ecs_task_definition" {
-                family             = "my-ecs-task"
-                network_mode       = "awsvpc" # Ensure this is "awsvpc"
-                execution_role_arn = "arn:aws:iam::135581164469:role/ecsTaskExecutionRole"
-                cpu                = 256
-                memory             = 512
-              
-                container_definitions = jsonencode([{
-                  name      = "dockergs"
-                  image     = "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}"
-                  cpu       = 256
-                  memory    = 512
-                  essential = true
-                  portMappings = [
+              "family": "my-ecs-task",
+              "networkMode": "awsvpc",
+              "executionRoleArn": "arn:aws:iam::135581164469:role/ecsTaskExecutionRole",
+              "containerDefinitions": [
+                {
+                  "name": "dockergs",
+                  "image": "'$AWS_ACCOUNT_ID'.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3:'$TAG'",
+                  "cpu": 256,
+                  "memory": 512,
+                  "essential": true,
+                  "portMappings": [
                     {
-                      containerPort = 5000
-                      hostPort      = 5000
-                      protocol      = "tcp"
+                      "containerPort": 5000,
+                      "hostPort": 5000,
+                      "protocol": "tcp"
                     }
                   ]
-                }])
-              }
-
+                }
+              ]
+            }' > task-definition.json
+            aws ecs register-task-definition --cli-input-json file://task-definition.json
   
         # Update ECS Service to use the new Task Definition
       - name: Update ECS Service
