@@ -80,7 +80,7 @@ jobs:
            --protocol HTTP \
            --port 5000 \
            --vpc-id vpc-0a86cafe357f439f0 \
-           --target-type ip \
+           --target-type instance \
            --query 'TargetGroups[0].TargetGroupArn' \
            --output text)
          echo "TARGET_GROUP_ARN=$TARGET_GROUP_ARN" >> $GITHUB_ENV
