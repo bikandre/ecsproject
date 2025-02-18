@@ -16,11 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       
+      # Set up the TAG environment variable
       - name: Set up the TAG environment variable
-        run: echo "TAG=$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
-
-      - name: Output Tag Value
-        run: echo "$TAG"
+        id: tag
+        run: |
+          TAG=$(git rev-parse --short=4 HEAD)
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "TAG=$TAG"  # Output TAG value for debugging
 
       # Set up AWS credentials (Make sure you add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as secrets in your GitHub repo)
       - name: Set up AWS CLI
