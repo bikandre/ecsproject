@@ -55,6 +55,7 @@ jobs:
           docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}
 
 
+
       # # Update ECS Task Definition
       # - name: Update ECS Task Definition
       #   run: |
