@@ -79,13 +79,13 @@ jobs:
   
       - name: Update ECS Service
         run: |
-           aws ecs create-service \
-             --cluster ecsCluster1 \
-             --service-name newservice \
-             --task-definition my-ecs-task \
-             --desired-count 1 \
-             --launch-type EC2 \
-             --network-configuration "awsvpcConfiguration={subnets=[subnet-05a6864843a85e1f0,subnet-002e85e7be08ab721],securityGroups=[sg-0038c39acc2cb1585]}"
-
+          aws ecs create-service \
+            --cluster ecsCluster1 \
+            --service-name newservice \
+            --task-definition my-ecs-task \
+            --desired-count 1 \
+            --launch-type EC2 \
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-05a6864843a85e1f0,subnet-002e85e7be08ab721],securityGroups=[sg-0038c39acc2cb1585]}"\
+            
 
 
