@@ -16,15 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Set up the TAG environment variable
       - name: Set up the TAG environment variable
-        id: tag
-        run: |
-          TAG=$(git rev-parse --short=4 HEAD)
-          echo "TAG=$TAG" >> $GITHUB_ENV
-          echo "TAG=$TAG"  # Output TAG value for debugging
+        run: echo "TAG=$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
 
-      # Set up AWS credentials (Make sure you add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as secrets in your GitHub repo)
+      - name: Output Tag Value
+        run: echo "$TAG"
+
+      # Set up AWS credentials
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -42,43 +40,48 @@ jobs:
         run: |
           docker build -t andre/andreapp3 .
 
-      # Tag the image for ECR
+      # Tag the Docker image
       - name: Tag docker image with $TAG
         run: |
-          echo "Tagging image with $TAG"
           docker tag andre/andreapp3:latest 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}
 
       # Push the Docker image to ECR
       - name: Push Docker image to ECR
         run: |
-          echo "Pushing image to ECR"
           docker push 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}
 
+      # Create a new ECS Task Definition JSON
+      - name: Create ECS Task Definition JSON
+        run: |
+          echo '{
+            "family": "my-ecs-task",
+            "networkMode": "awsvpc",
+            "executionRoleArn": "arn:aws:iam::135581164469:role/ecsTaskExecutionRole",
+            "containerDefinitions": [
+              {
+                "name": "dockergs",
+                "image": "135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}",
+                "cpu": 256,
+                "memory": 512,
+                "essential": true,
+                "portMappings": [
+                  {
+                    "containerPort": 5000,
+                    "hostPort": 5000,
+                    "protocol": "tcp"
+                  }
+                ]
+              }
+            ]
+          }' > task-definition.json
 
-  update-ecs-task-definition:
-      runs-on: self-hosted
-      needs: build-and-deploy  # This stage depends on the successful completion of the build-and-deploy job
-      steps:
-        # Update ECS Task Definition with the new tag
-        - name: Update ECS Task Definition
-          run: |
-            aws ecs register-task-definition \
-              --family my-ecs-task \
-              --container-definitions "[{
-                \"name\": \"dockergs\",
-                \"image\": \"135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andre:ecsimage${TAG}\",
-                \"cpu\": 256,
-                \"memory\": 512,
-                \"essential\": true,
-                \"portMappings\": [{\"containerPort\": 5000, \"hostPort\": 5000, \"protocol\": \"tcp\"}]
-              }]"
- 
-  update-ecs-service:
-      runs-on: self-hosted
-      needs: update-ecs-task-definition  # This stage depends on the successful completion of the update-ecs-task-definition job
-      steps:
-        # Update ECS service to use the new task definition
-      - name: Update ECS service
+      # Register the ECS Task Definition
+      - name: Register ECS Task Definition
+        run: |
+          aws ecs register-task-definition --cli-input-json file://task-definition.json
+
+      # Update ECS Service to use the new Task Definition
+      - name: Update ECS Service
         run: |
           aws ecs update-service \
             --cluster ecsCluster1 \
