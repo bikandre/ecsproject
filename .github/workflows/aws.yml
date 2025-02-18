@@ -82,7 +82,7 @@ jobs:
           aws ecs create-service \
             --cluster ecsCluster1 \
             --service-name newservice \
-            --task-definition your-task-definition:1 \
+            --task-definition my-ecs-task \
             --desired-count 1 \
             --launch-type EC2 \
             --network-configuration "awsvpcConfiguration={subnets=[subnet-xxxxxxxx],securityGroups=[sg-xxxxxxxx],assignPublicIp=ENABLED}"
