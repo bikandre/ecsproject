@@ -78,9 +78,9 @@ jobs:
       needs: update-ecs-task-definition  # This stage depends on the successful completion of the update-ecs-task-definition job
       steps:
         # Update ECS service to use the new task definition
-        - name: Update ECS Service
-          run: |
-            aws ecs update-service \
-              --cluster your-cluster-name \
-              --service your-service-name \
-              --task-definition my-ecs-task
+      - name: Update ECS service
+        run: |
+          aws ecs update-service \
+            --cluster ecsCluster1 \
+            --service my-ecs-service \
+            --task-definition my-ecs-task
