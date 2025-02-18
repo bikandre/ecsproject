@@ -77,15 +77,15 @@ jobs:
             aws ecs register-task-definition --cli-input-json file://task-definition.json
   
         # Update ECS Service to use the new Task Definition
-      - name: Assume Role for ECS service update
-        id: assume-role
-        run: |
-          ROLE_ARN="arn:aws:iam::135581164469:role/AWSServiceRoleForECS"
-          SESSION_NAME="GitHubActionsSession"
-          CREDS=$(aws sts assume-role --role-arn $ROLE_ARN --role-session-name $SESSION_NAME)
-          export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)
-          export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)
-          export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)
+      # - name: Assume Role for ECS service update
+      #   id: assume-role
+      #   run: |
+      #     ROLE_ARN="arn:aws:iam::135581164469:role/AWSServiceRoleForECS"
+      #     SESSION_NAME="GitHubActionsSession"
+      #     CREDS=$(aws sts assume-role --role-arn $ROLE_ARN --role-session-name $SESSION_NAME)
+      #     export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)
+      #     export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)
+      #     export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)
   
       - name: Update ECS Service
         run: |
