@@ -1,68 +1,74 @@
-name: Deploy to Amazon ECS
+name: Deploy to AWS ECR and ECS
 
 on:
   push:
-    branches: [ "main" ]
-
-env:
-  AWS_REGION: MY_AWS_REGION                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: MY_ECR_REPOSITORY           # set this to your Amazon ECR repository name
-  ECS_SERVICE: MY_ECS_SERVICE                 # set this to your Amazon ECS service name
-  ECS_CLUSTER: MY_ECS_CLUSTER                 # set this to your Amazon ECS cluster name
-  ECS_TASK_DEFINITION: MY_ECS_TASK_DEFINITION # set this to the path to your Amazon ECS task definition
-                                               # file, e.g. .aws/task-definition.json
-  CONTAINER_NAME: MY_CONTAINER_NAME           # set this to the name of the container in the
-                                               # containerDefinitions section of your task definition
-
-permissions:
-  contents: read
+    branches:
+      - main  # Trigger on push to main branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull request to main branch
 
 jobs:
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    environment: production
-
+  build-and-deploy:
+    runs-on: self-hosted
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+      - name: Set up the TAG environment variable
+        run: echo "TAG=$(git rev-parse --short=4 HEAD)" >> $GITHUB_ENV
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Output Tag Value
+        run: echo "$TAG"
 
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        # Build a docker container and
-        # push it to ECR so that it can
-        # be deployed to ECS.
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      # Set up AWS credentials (Make sure you add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY as secrets in your GitHub repo)
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-    - name: Fill in the new image ID in the Amazon ECS task definition
-      id: task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: ${{ env.ECS_TASK_DEFINITION }}
-        container-name: ${{ env.CONTAINER_NAME }}
-        image: ${{ steps.build-image.outputs.image }}
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 135581164469.dkr.ecr.us-east-1.amazonaws.com
 
-    - name: Deploy Amazon ECS task definition
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: ${{ env.ECS_SERVICE }}
-        cluster: ${{ env.ECS_CLUSTER }}
-        wait-for-service-stability: true
+      # Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t andre/andreapp3 .
+
+      # Tag the image for ECR
+      - name: Tag Docker image
+        run: |
+          docker tag andre/andreapp3:latest 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3$TAG
+
+      # Push the Docker image to ECR
+      - name: Push Docker image to ECR
+        run: |
+          docker tag andre/andreapp3:latest 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3$TAG
+
+      # # Update ECS Task Definition
+      # - name: Update ECS Task Definition
+      #   run: |
+      #     # Register a new task definition with the updated image
+      #     aws ecs register-task-definition \
+      #       --family my-ecs-task \
+      #       --container-definitions "[{
+      #         \"name\": \"dockergs\",
+      #         \"image\": \"docker tag andre/andreapp3:latest 135581164469.dkr.ecr.us-east-1.amazonaws.com/andre/andreapp3$TAG\",
+      #         \"cpu\": 256,
+      #         \"memory\": 512,
+      #         \"essential\": true,
+      #         \"portMappings\": [{\"containerPort\": 8080, \"hostPort\": 8080, \"protocol\": \"tcp\"}]
+      #       }]"
+
+      # # Update ECS service to use the new task definition
+      # - name: Update ECS service
+      #   run: |
+      #     aws ecs update-service \
+      #       --cluster your-cluster-name \
+      #       --service your-service-name \
+      #       --task-definition my-ecs-task
